@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>three.js webgl - shaders - ocean</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link type="text/css" rel="stylesheet" href="main.css">
@@ -9,10 +8,8 @@
 <body>
 
     <div id="container"></div>
-    <div id="info">
-        <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - webgl ocean
-    </div>
-
+   
+    <!-- تحديد مسار المكتبات المراد استيرادها في المشروع -->
     <script type="importmap">
         {
             "imports": {
@@ -25,6 +22,7 @@
 
     <script type="module">
 
+        // استيراد المكتبات والأدوات المطلوبة من Three.js
         import * as THREE from 'three';
         import Stats from 'three/addons/libs/stats.module.js';
         import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
@@ -32,43 +30,51 @@
         import { Water } from 'three/addons/objects/Water.js';
         import { Sky } from 'three/addons/objects/Sky.js';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-        import { group } from './physic'
-        
+        import { group } from './physic' // استيراد مجموعة من كائنات الفيزياء
+
+        // تعريف المتغيرات العامة المستخدمة في المشروع
         let container, stats;
         let camera, scene, renderer;
         let controls, water, sun;
         let boat, breakwater;
 
+        // استدعاء دالة التهيئة عند بدء تشغيل البرنامج
         init();
 
         function init() {
 
+            // ربط الحاوية في HTML بـ Three.js
             container = document.getElementById('container');
 
+            // إعدادات محرك الرسوميات WebGL
             renderer = new THREE.WebGLRenderer();
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setAnimationLoop(animate);
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 0.5;
-            container.appendChild(renderer.domElement);
+            renderer.setPixelRatio(window.devicePixelRatio); // ضبط نسبة البيكسل حسب الجهاز المستخدم
+            renderer.setSize(window.innerWidth, window.innerHeight); // ضبط حجم المشهد لملء النافذة
+            renderer.setAnimationLoop(animate); // ضبط حلقة الرسوم المتحركة
+            renderer.toneMapping = THREE.ACESFilmicToneMapping; // ضبط Tone Mapping
+            renderer.toneMappingExposure = 0.5; // ضبط التعرض للضوء
+            container.appendChild(renderer.domElement); // إرفاق عنصر الرسومات بـ DOM
 
+            // إنشاء مشهد فارغ
             scene = new THREE.Scene();
 
+            // إعدادات الكاميرا
             camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 1, 20000);
-            camera.position.set(30, 30, 100);
+            camera.position.set(30, 30, 100); // ضبط موقع الكاميرا
 
-            sun = new THREE.Vector3();
+            sun = new THREE.Vector3(); // إنشاء متجه للشمس
 
+            // إنشاء جيومتري الماء
             const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
 
+            // إنشاء سطح الماء باستخدام مكتبة Water.js
             water = new Water(
                 waterGeometry,
                 {
                     textureWidth: 512,
                     textureHeight: 512,
                     waterNormals: new THREE.TextureLoader().load('textures/waternormals.jpg', function (texture) {
-                        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+                        texture.wrapS = texture.wrapT = THREE.RepeatWrapping; // تكرار التكتشر
                     }),
                     sunDirection: new THREE.Vector3(),
                     sunColor: 0xffffff,
@@ -78,128 +84,175 @@
                 }
             );
 
-            water.rotation.x = -Math.PI / 2;
+        // تحميل الأصوات المختلفة
+        const waveSound = new Audio('sounds/waves.mp3');
+        waveSound.loop = true; // تكرار صوت الموج
+        waveSound.volume = 1; // ضبط مستوى الصوت
 
-            scene.add(water);
+        waveSound.addEventListener('canplaythrough', () => {
+            console.log('Wave sound loaded successfully');
+            waveSound.play(); // تشغيل الصوت عند التحميل الكامل
+        }, false);
 
-            const sky = new Sky();
-            sky.scale.setScalar(10000);
-            scene.add(sky);
+        waveSound.addEventListener('error', (e) => {
+            console.error('Error loading wave sound:', e); // معالجة الأخطاء في حالة حدوث مشكلة في تحميل الصوت
+        });
 
-            const skyUniforms = sky.material.uniforms;
+        const engineSound = new Audio('sounds/engine.mp3');
+        engineSound.loop = true; // تكرار صوت المحرك
+        engineSound.volume = 0.5; // ضبط مستوى الصوت
 
-            skyUniforms['turbidity'].value = 10;
-            skyUniforms['rayleigh'].value = 2;
-            skyUniforms['mieCoefficient'].value = 0.005;
-            skyUniforms['mieDirectionalG'].value = 0.8;
+        engineSound.addEventListener('canplaythrough', () => {
+            console.log('Engine sound loaded successfully');
+            engineSound.play(); // تشغيل الصوت عند التحميل الكامل
+        }, false);
 
-            const parameters = {
-                elevation: 2,
-                azimuth: 180
-            };
+        engineSound.addEventListener('error', (e) => {
+            console.error('Error loading engine sound:', e); // معالجة الأخطاء في حالة حدوث مشكلة في تحميل الصوت
+        });
 
-            const pmremGenerator = new THREE.PMREMGenerator(renderer);
-            const sceneEnv = new THREE.Scene();
+        const engine_startSound = new Audio('sounds/engine_start.mp3');
+        engine_startSound.loop = false; // تشغيل صوت بدء المحرك مرة واحدة
+        engine_startSound.volume = 1; // ضبط مستوى الصوت
 
-            let renderTarget;
+        engine_startSound.addEventListener('canplaythrough', () => {
+            console.log('Engine start sound loaded successfully');
+            engine_startSound.play(); // تشغيل الصوت عند التحميل الكامل
+        }, false);
 
-            function updateSun() {
-                const phi = THREE.MathUtils.degToRad(90 - parameters.elevation);
-                const theta = THREE.MathUtils.degToRad(parameters.azimuth);
+        engine_startSound.addEventListener('error', (e) => {
+            console.error('Error loading engine start sound:', e); // معالجة الأخطاء في حالة حدوث مشكلة في تحميل الصوت
+        });
 
-                sun.setFromSphericalCoords(1, phi, theta);
+        // ضبط دوران الماء ليكون أفقيًا
+        water.rotation.x = -Math.PI / 2;
 
-                sky.material.uniforms['sunPosition'].value.copy(sun);
-                // water.material.uniforms['sunDirection'].value.copy(sun).normalize();
+        scene.add(water); // إضافة الماء إلى المشهد
 
-                if (renderTarget !== undefined) renderTarget.dispose();
+        // إعدادات السماء
+        const sky = new Sky();
+        sky.scale.setScalar(10000); // ضبط حجم السماء
+        scene.add(sky);
 
-                sceneEnv.add(sky);
-                renderTarget = pmremGenerator.fromScene(sceneEnv);
-                scene.add(sky);
+        const skyUniforms = sky.material.uniforms;
 
-                scene.environment = renderTarget.texture;
-            }
+        skyUniforms['turbidity'].value = 10; // ضبط تعكر السماء
+        skyUniforms['rayleigh'].value = 2; // ضبط انتشار الضوء
+        skyUniforms['mieCoefficient'].value = 0.005; // ضبط معامل Mie
+        skyUniforms['mieDirectionalG'].value = 0.8; // ضبط معامل Mie الاتجاهي
 
-            updateSun();
+        const parameters = {
+            elevation: 2, // ارتفاع الشمس
+            azimuth: 180 // زاوية الشمس
+        };
 
-            controls = new OrbitControls(camera, renderer.domElement);
-            controls.maxPolarAngle = Math.PI * 0.495;
-            // controls.target.set(0, 10, 0);
-            controls.minDistance = 40.0;
-            controls.maxDistance = 200.0;
-            controls.update();
+        const pmremGenerator = new THREE.PMREMGenerator(renderer); // مولد PMREM
+        const sceneEnv = new THREE.Scene(); // مشهد بيئي جديد
 
-            stats = new Stats();
-            container.appendChild(stats.dom);
+        let renderTarget;
 
-            const gui = new GUI();
+        function updateSun() {
+            // حساب موقع الشمس
+            const phi = THREE.MathUtils.degToRad(90 - parameters.elevation);
+            const theta = THREE.MathUtils.degToRad(parameters.azimuth);
 
-            const folderSky = gui.addFolder('Sky');
-            folderSky.add(parameters, 'elevation', 0, 90, 0.1).onChange(updateSun);
-            folderSky.add(parameters, 'azimuth', -180, 180, 0.1).onChange(updateSun);
-            folderSky.open();
+            sun.setFromSphericalCoords(1, phi, theta);
 
-            const waterUniforms = water.material.uniforms;
+            sky.material.uniforms['sunPosition'].value.copy(sun); // تحديث موقع الشمس في السماء
 
-            const folderWater = gui.addFolder('Water');
-            folderWater.add(waterUniforms.distortionScale, 'value', 0, 8, 0.1).name('distortionScale');
-            folderWater.add(waterUniforms.size, 'value', 0.1, 10, 0.1).name('size');
-            folderWater.open();
+            if (renderTarget !== undefined) renderTarget.dispose(); // التخلص من الهدف السابق إذا وجد
 
-            window.addEventListener('resize', onWindowResize);
+            sceneEnv.add(sky); // إضافة السماء إلى المشهد البيئي
+            renderTarget = pmremGenerator.fromScene(sceneEnv); // إنشاء الهدف من المشهد البيئي
+            scene.add(sky); // إضافة السماء إلى المشهد
 
-            // Load the boat model
-            const loader = new GLTFLoader();
-            scene.add(group);
-            // scene.add(mesh)
-            loader.load('models/boat.gltf', function(gltf) {
-                boat = gltf.scene;
-                boat.scale.set(10, 10, 10); // Adjust the scale if necessary
-                boat.position.set(0, 10, 0); // Set the initial position well above the water level
-                group.add(boat);//kassem
-                console.log('Boat loaded successfully');
-            }, undefined, function(error) {
-                console.error('Error loading boat:', error);
-            });
-
-            // Load the breakwater_2 model
-            loader.load('models/breakwater_2/breakwater_2.gltf', function(gltf) {
-                breakwater = gltf.scene;
-                breakwater.scale.set(10, 10, 10); // Adjust the scale if necessary
-                breakwater.position.set(50, 0, 0); // Adjust the position as needed
-                // scene.add(breakwater); /// kassem 
-                console.log('Breakwater loaded successfully');
-            }, undefined, function(error) {
-                console.error('Error loading breakwater:', error);
-            });
+            scene.environment = renderTarget.texture; // ضبط البيئة باستخدام التكتشر الناتج
         }
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        updateSun(); // تحديث موقع الشمس
+
+        // إعدادات التحكم بالكاميرا باستخدام الفأرة
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.maxPolarAngle = Math.PI * 0.495;
+        controls.minDistance = 40.0;
+        controls.maxDistance = 200.0;
+        controls.update(); // تحديث الإعدادات
+
+        stats = new Stats(); // إحصائيات الأداء
+        container.appendChild(stats.dom); // إرفاق عنصر الإحصائيات بـ DOM
+
+        const gui = new GUI(); // واجهة المستخدم الرسومية
+
+        // إعدادات واجهة التحكم في السماء
+        const folderSky = gui.addFolder('Sky');
+        folderSky.add(parameters, 'elevation', 0, 90, 0.1).onChange(updateSun);
+        folderSky.add(parameters, 'azimuth', -180, 180, 0.1).onChange(updateSun);
+        folderSky.open();
+
+        // إعدادات واجهة التحكم في الماء
+        const waterUniforms = water.material.uniforms;
+
+        const folderWater = gui.addFolder('Water');
+        folderWater.add(waterUniforms.distortionScale, 'value', 0, 8, 0.1).name('distortionScale');
+        folderWater.add(waterUniforms.size, 'value', 0.1, 10, 0.1).name('size');
+        folderWater.open();
+
+        // تحديث إعدادات المشهد عند تغيير حجم النافذة
+        window.addEventListener('resize', onWindowResize);
+
+        // تحميل نموذج القارب
+        const loader = new GLTFLoader();
+        scene.add(group); // إضافة مجموعة الفيزياء إلى المشهد
+
+        loader.load('models/boat.gltf', function(gltf) {
+            boat = gltf.scene;
+            boat.scale.set(10, 10, 10); // ضبط مقياس القارب
+            boat.position.set(0, 10, 0); // ضبط موقع القارب
+            group.add(boat); // إضافة القارب إلى مجموعة الفيزياء
+            console.log('Boat loaded successfully');
+        }, undefined, function(error) {
+            console.error('Error loading boat:', error);
+        });
+
+        // تحميل نموذج الحاجز المائي
+        loader.load('models/breakwater_2/breakwater_2.gltf', function(gltf) {
+            breakwater = gltf.scene;
+            breakwater.scale.set(10, 10, 10); // ضبط مقياس الحاجز المائي
+            breakwater.position.set(50, 0, 0); // ضبط موقع الحاجز المائي
+            // scene.add(breakwater); // كود معلق لإضافة الحاجز المائي إلى المشهد
+            console.log('Breakwater loaded successfully');
+        }, undefined, function(error) {
+            console.error('Error loading breakwater:', error);
+        });
+    }
+
+    function onWindowResize() {
+        // تحديث إعدادات الكاميرا والمشهد عند تغيير حجم النافذة
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+        // حلقة الرسوم المتحركة
+        render();
+        stats.update(); // تحديث الإحصائيات
+    }
+
+    function render() {
+        // عملية الرسم والتحديث للمشهد
+        const time = performance.now() * 0.001;
+
+        if (boat) {
+            // التحكم بموقع القارب بناءً على الزمن (معلق)
         }
 
-        function animate() {
-            render();
-            stats.update();
-        }
+        controls.target.set(group.position.x ,group.position.y ,group.position.z ); // تحديث هدف الكاميرا
+        renderer.render(scene, camera); // رسم المشهد
+    }
 
-        function render() {
-            const time = performance.now() * 0.001;
-            // water.mate   rial.uniforms['time'].value += 1.0 / 60.0;
+</script>
 
-            if (boat) {
-                // boat.position.y = Math.max(Math.sin(time) * 2 + 5, 5); // Ensure the boat stays well above water level
-            }
-            controls.target.set(group.position.x ,group.position.y ,group.position.z );
-            // console.log('aaaaaaaaaaaaaaa')
-
-            renderer.render(scene, camera);
-        }
-
-    </script>
-    <script type="module" src="/controle.js"></script>
+    <script type="module" src="/controle.js"></script> <!-- استيراد ملف التحكم الخارجي -->
 </body>
 </html>

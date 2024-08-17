@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 export let group = new THREE.Group();
-// export const group =new THREE.Mesh(new THREE.BoxGeometry(50 , 50,100) , new THREE.MeshNormalMaterial());
-// group.material.wireframe = true ;
+// تعريف مجموعة يمكن من خلالها إضافة الأشكال ثلاثية الأبعاد وتحريكها معًا.
+
+// تعريف كلاس يمثل المتجهات ثلاثية الأبعاد ويتيح إجراء العمليات الحسابية عليها مثل الجمع.
 class Vector {
     constructor(x = 0, y = 0, z = 0) {
         this.x = x; this.y = y; this.z = z;
@@ -13,23 +14,26 @@ class Vector {
     }
 }
 
+// مجموعة من المتغيرات الفيزيائية الرئيسية والخصائص التي ستتحكم في حركة الجسم.
 export var params = {
-    pWater:1025 ,
-    v : 300 ,
-    g : 9.8 ,
-    pAir : 1.25 ,
-    mass: 200000,
-    force: new Vector(),
-    acceleration: new Vector(),
-    velocity: new Vector(),
-    position: new Vector(),
-    deltaTime: 0.05,
-    cd_water : 0.5 ,
-    cd_air : 0.05 , 
-    ang : 0,
-    waterSpeed : 300 , // m.s
-    pushForce : 0 
+    pWater: 1025 , // كثافة الماء بالكيلوغرام لكل متر مكعب
+    v : 300 , // حجم الجسم تحت الماء
+    g : 9.8 , // تسارع الجاذبية الأرضية
+    pAir : 1.25 , // كثافة الهواء
+    mass: 200000, // كتلة الجسم بالكيلوغرام
+    force: new Vector(), // متجه القوة المؤثرة على الجسم
+    acceleration: new Vector(), // متجه التسارع
+    velocity: new Vector(), // متجه السرعة
+    position: new Vector(), // متجه الموقع الحالي للجسم
+    deltaTime: 0.05, // الفاصل الزمني للتحديثات
+    cd_water : 0.5 , // معامل السحب في الماء
+    cd_air : 0.05 , // معامل السحب في الهواء
+    ang : 0, // الزاوية التي يتحرك بها الجسم
+    waterSpeed : 300 , // سرعة الماء بالمتر في الثانية
+    pushForce : 0 // القوة التي تدفع الجسم
 }
+
+// دالة تحسب تأثير مقاومة الهواء على الجسم وتعيد متجه القوة الناتج.
 function airRes(){
     var res = new Vector() ;
     res.x = -0.5 * params.pAir * faceX() * Math.pow(params.velocity.x ,2 )* params.cd_air;
@@ -40,6 +44,8 @@ function airRes(){
     if (params.velocity.z < 0) res.z *= -1;
     return res ;
 }
+
+// دالة تحسب تأثير مقاومة الماء على الجسم وتعيد متجه القوة الناتج.
 function airWater() {
     var res = new Vector();
     res.x = -0.5 * params.pWater * faceX() * Math.pow(params.velocity.x, 2) * params.cd_water;
@@ -50,89 +56,97 @@ function airWater() {
     if (params.velocity.z < 0) res.z *= -1;
     return res;
 }
-function push(){
-    // 0.3 is the space of force 
 
-    // const pushForce = params.pWater * params.waterSpeed * 0.3 ; 
-    const pushForce = params.pushForce ;
+// دالة تحسب قوة الدفع التي تؤثر على الجسم بناءً على الزاوية.
+function push(){
+    const pushForce = params.pushForce ; // استخدام القوة الدفع المعطاة
     var push = new Vector();
     push.x = pushForce * Math.sin(params.ang) ;
     push.z = pushForce * Math.cos([params.ang]);
     return push ;
-    
 }
+
+// دالة تحسب قوة الطفو التي تؤثر على الجسم نتيجة كثافة الماء.
 function boument(){
     var boument = new Vector() ;
     boument.y += params.pWater * volUnderWater() * params.g ;
-    // console.log(boument);
     return boument ;
 }
 
+// دالة تحسب تأثير الجاذبية على الجسم وتعيد متجه القوة الناتج.
 function gravity(){
     var gravity = new Vector()
     gravity.y -= params.mass * params.g ;
-    // console.log(gravity);
     return gravity ;
-
 }
+
+// دالة تحسب التسارع بناءً على القوى المؤثرة على الجسم.
 function accelerations(){
     params.acceleration.x = params.force.x / params.mass;
     params.acceleration.y = params.force.y / params.mass;
     params.acceleration.z = params.force.z / params.mass;
 }
+
+// دالة تحسب السرعة الجديدة للجسم بناءً على التسارع.
 function velocites(){
     params.velocity.x += params.acceleration.x * params.deltaTime;
     params.velocity.y += params.acceleration.y * params.deltaTime;
     params.velocity.z += params.acceleration.z * params.deltaTime;
 }
+
+// دالة تحسب الموقع الجديد للجسم بناءً على السرعة.
 function position(){
     params.position.x += params.velocity.x * params.deltaTime;
     params.position.y += params.velocity.y * params.deltaTime;
     params.position.z += params.velocity.z * params.deltaTime;
 }
+
+// دالة تحسب مساحة السطح المتعامد على محور X المعرض للهواء أو الماء.
 function faceX(){
     return percent() * 10 * 5 ;
 }
+
+// دالة تحسب مساحة السطح المتعامد على محور Y.
 function faceY() {
     return 10 * 5;
 }
+
+// دالة تحسب مساحة السطح المتعامد على محور Z المعرض للهواء أو الماء.
 function  faceZ(){
     return percent() * 5 * 5 ;
 }
-function percent(){
-    //percent is the y under the water 
-    // mult by - becaus the y vertecies is nigative 
-    var percent = - params.position.y + 20;
-    // max value will be 40 
-    percent = Math.min(percent, 40);
-    // min val is zero 
 
-    percent = Math.max(percent, 0)
+// دالة تحسب النسبة المئوية من الجسم الموجودة تحت الماء.
+function percent(){
+    var percent = - params.position.y + 20; // حساب النسبة بناءً على موقع الجسم
+    percent = Math.min(percent, 40); // تحديد الحد الأعلى للنسبة
+    percent = Math.max(percent, 0); // تحديد الحد الأدنى للنسبة
     percent = percent / 40;
     return percent ;
 }
+
+// دالة تحسب حجم الجزء المغمور من الجسم تحت الماء.
 function volUnderWater(){
-   
     return params.v * percent() ;
-    
 }
+
+// دالة التحديث الرئيسية التي تستدعى في كل إطار وتقوم بتحديث القوى والحركات والموقع.
 function update(){
-    params.force = new Vector() ;
-    params.force.add(boument());
-    params.force.add(gravity());
-    params.force.add(airRes());
-    params.force.add(airWater());
-    params.force.add(push());
+    params.force = new Vector() ; // إعادة تعيين متجه القوة
+    params.force.add(boument()); // إضافة قوة الطفو
+    params.force.add(gravity()); // إضافة قوة الجاذبية
+    params.force.add(airRes()); // إضافة مقاومة الهواء
+    params.force.add(airWater()); // إضافة مقاومة الماء
+    params.force.add(push()); // إضافة قوة الدفع
 
     console.log(params.force)
-    group.rotation.y = params.ang ;
-    accelerations();
-    velocites();
-    position();
-    group.position.set(params.position.x, params.position.y, params.position.z);
-    // group.position.z++ ;
-    window.requestAnimationFrame(update);
+    group.rotation.y = params.ang ; // تحديث زاوية دوران الجسم
+    accelerations(); // حساب التسارع
+    velocites(); // حساب السرعة
+    position(); // حساب الموقع الجديد
+    group.position.set(params.position.x, params.position.y, params.position.z); // تعيين الموقع الجديد للمجموعة
+
+    window.requestAnimationFrame(update); // استدعاء الدالة في الإطار التالي
 }
-update();
 
-
+update(); // بدء عملية التحديث
