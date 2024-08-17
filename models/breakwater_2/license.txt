@@ -1,0 +1,11 @@
+Model Information:
+* title:	Breakwater 2
+* source:	https://sketchfab.com/3d-models/breakwater-2-899501344a894922a7a6d1e706b9b31c
+* author:	JonathanPepe (https://sketchfab.com/JonathanPepe)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Breakwater 2" (https://sketchfab.com/3d-models/breakwater-2-899501344a894922a7a6d1e706b9b31c) by JonathanPepe (https://sketchfab.com/JonathanPepe) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
