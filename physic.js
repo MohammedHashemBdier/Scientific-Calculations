@@ -36,9 +36,9 @@ export var params = {
 // دالة تحسب تأثير مقاومة الهواء على الجسم وتعيد متجه القوة الناتج.
 function airRes(){
     var res = new Vector() ;
-    res.x = -0.5 * params.pAir * faceX() * Math.pow(params.velocity.x ,2 )* params.cd_air;
-    res.z = -0.5 * params.pAir * faceZ() * Math.pow(params.velocity.z, 2) * params.cd_air;
-    res.y = -0.5 * params.pAir * faceY() * Math.pow(params.velocity.y, 2) * params.cd_air;
+    res.x = -0.5 * params.pAir * (100 - faceX()) * Math.pow(params.velocity.x ,2 )* params.cd_air;
+    res.z = -0.5 * params.pAir *  (100 - faceZ()) * Math.pow(params.velocity.z, 2) * params.cd_air;
+    res.y = -0.5 * params.pAir * (100 - faceY()) * Math.pow(params.velocity.y, 2) * params.cd_air;
     if (params.velocity.y < 0)res.y = 0 ; 
     if (params.velocity.x < 0) res.x *= -1;
     if (params.velocity.z < 0) res.z *= -1;
@@ -116,7 +116,7 @@ function  faceZ(){
     return percent() * 5 * 5 ;
 }
 
-// دالة تحسب النسبة المئوية من الجسم الموجودة تحت الماء.
+// دالة تحسب النسبة المئوية من الجسم الموجودة تحت الماء.s
 function percent(){
     var percent = - params.position.y + 20; // حساب النسبة بناءً على موقع الجسم
     percent = Math.min(percent, 40); // تحديد الحد الأعلى للنسبة

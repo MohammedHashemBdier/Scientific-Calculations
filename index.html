@@ -37,6 +37,45 @@
         let camera, scene, renderer;
         let controls, water, sun;
         let boat, breakwater;
+ // تحميل الأصوات المختلفة
+ const waveSound = new Audio('sounds/waves.mp3');
+        waveSound.loop = true; // تكرار صوت الموج
+        waveSound.volume = 1; // ضبط مستوى الصوت
+
+        waveSound.addEventListener('canplaythrough', () => {
+            console.log('Wave sound loaded successfully');
+            waveSound.play(); // تشغيل الصوت عند التحميل الكامل
+        }, false);
+
+        waveSound.addEventListener('error', (e) => {
+            console.error('Error loading wave sound:', e); // معالجة الأخطاء في حالة حدوث مشكلة في تحميل الصوت
+        });
+
+        const engineSound = new Audio('sounds/engine.mp3');
+        engineSound.loop = true; // تكرار صوت المحرك
+        engineSound.volume = 0.5; // ضبط مستوى الصوت
+
+        engineSound.addEventListener('canplaythrough', () => {
+            console.log('Engine sound loaded successfully');
+            engineSound.play(); // تشغيل الصوت عند التحميل الكامل
+        }, false);
+
+        engineSound.addEventListener('error', (e) => {
+            console.error('Error loading engine sound:', e); // معالجة الأخطاء في حالة حدوث مشكلة في تحميل الصوت
+        });
+
+        const engine_startSound = new Audio('sounds/engine_start.mp3');
+        engine_startSound.loop = false; // تشغيل صوت بدء المحرك مرة واحدة
+        engine_startSound.volume = 1; // ضبط مستوى الصوت
+
+        engine_startSound.addEventListener('canplaythrough', () => {
+            console.log('Engine start sound loaded successfully');
+            engine_startSound.play(); // تشغيل الصوت عند التحميل الكامل
+        }, false);
+
+        engine_startSound.addEventListener('error', (e) => {
+            console.error('Error loading engine start sound:', e); // معالجة الأخطاء في حالة حدوث مشكلة في تحميل الصوت
+        });
 
         // استدعاء دالة التهيئة عند بدء تشغيل البرنامج
         init();
@@ -84,46 +123,7 @@
                 }
             );
 
-        // تحميل الأصوات المختلفة
-        const waveSound = new Audio('sounds/waves.mp3');
-        waveSound.loop = true; // تكرار صوت الموج
-        waveSound.volume = 1; // ضبط مستوى الصوت
-
-        waveSound.addEventListener('canplaythrough', () => {
-            console.log('Wave sound loaded successfully');
-            waveSound.play(); // تشغيل الصوت عند التحميل الكامل
-        }, false);
-
-        waveSound.addEventListener('error', (e) => {
-            console.error('Error loading wave sound:', e); // معالجة الأخطاء في حالة حدوث مشكلة في تحميل الصوت
-        });
-
-        const engineSound = new Audio('sounds/engine.mp3');
-        engineSound.loop = true; // تكرار صوت المحرك
-        engineSound.volume = 0.5; // ضبط مستوى الصوت
-
-        engineSound.addEventListener('canplaythrough', () => {
-            console.log('Engine sound loaded successfully');
-            engineSound.play(); // تشغيل الصوت عند التحميل الكامل
-        }, false);
-
-        engineSound.addEventListener('error', (e) => {
-            console.error('Error loading engine sound:', e); // معالجة الأخطاء في حالة حدوث مشكلة في تحميل الصوت
-        });
-
-        const engine_startSound = new Audio('sounds/engine_start.mp3');
-        engine_startSound.loop = false; // تشغيل صوت بدء المحرك مرة واحدة
-        engine_startSound.volume = 1; // ضبط مستوى الصوت
-
-        engine_startSound.addEventListener('canplaythrough', () => {
-            console.log('Engine start sound loaded successfully');
-            engine_startSound.play(); // تشغيل الصوت عند التحميل الكامل
-        }, false);
-
-        engine_startSound.addEventListener('error', (e) => {
-            console.error('Error loading engine start sound:', e); // معالجة الأخطاء في حالة حدوث مشكلة في تحميل الصوت
-        });
-
+       
         // ضبط دوران الماء ليكون أفقيًا
         water.rotation.x = -Math.PI / 2;
 

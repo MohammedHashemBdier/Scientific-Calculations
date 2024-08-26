@@ -30,6 +30,10 @@ document.addEventListener("keydown", function (event) {
         // عند الضغط على حرف "w"، يتم زيادة قوة الدفع بمقدار 1000.
         params.pushForce += 1000;
     }
+    else if (key == 's') {
+        // عند الضغط على حرف "w"، يتم نقصان قوة الدفع بمقدار 1000.
+        params.pushForce -= 1000;
+    }
 }); 
 
 // Uncomment the following lines if you want to add audio functionality.
